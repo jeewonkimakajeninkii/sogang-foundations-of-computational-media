@@ -1,0 +1,59 @@
+var video;
+var prevFrame;
+
+var threshold= 50;
+
+function setup(){
+  createCanvas(320,240);
+  pixelDensity(1);
+  video= createCapture(VIDEO);
+  video.size(width,height);
+  video.hide();
+  prevFrame= createImage(video.width, video.height);
+  
+}
+
+function draw(){
+  image(prevFrame,0,0);
+  loadPixels();
+  video.loadPixels();
+  prevFrame.loadPixels();
+  
+  for(var x=0; x<video.width; x++){
+    for(var y=0; y<video.height; y++){
+      //첫째, 배열 안 픽셀주소가 어디냐
+      var loc= (x+ y*video.width)*4;
+      
+      //두번째, 이전 컬러가 뭐냐
+      var r1= prevFrame.pixels[loc ];
+      var g1= prevFrame.pixels[loc+1];
+      var b1= prevFrame.pixels[loc+2];
+      //셋째, 지금 컬러가 뭐냐
+      var r2= video.pixels[loc];
+      var g2= video.pixels[loc+1];
+      var b2= video.pixels[loc+2];
+      
+      //넷째, 이전과 지금 컬러를 비교
+      var diff= dist(r1,g1,b1,r2,g2,b2);
+      
+      //다섯째, 컬러가 얼마나 다른가
+      //만약 그 픽셀에서 컬러가 달라지면 모션이 있는거임
+      if(diff>threshold){
+        //모션이 있으면 블랙을 보여줘
+        pixels[loc]=0;
+        pixels[loc+1]= 0;
+        pixels[loc+2]= 0;
+        pixels[loc+3]= 255; //알파
+      }else{
+        pixels[loc]= 255;
+        pixels[loc+1]= 255;
+        pixels[loc+2]=255;
+        pixels[loc+3]=255;
+      }
+      
+    }
+  }
+  updatePixels();
+  //다음 사이클을 위해 프레임을 저장해라
+  prevFrame.copy(video,0,0,video.width,video.height,0,0,video.width,video.height);
+}
